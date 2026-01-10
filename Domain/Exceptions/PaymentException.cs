@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.ValueObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,8 +21,16 @@ namespace Domain.Exceptions
 
     public class InsufficientFundsException : PaymentException
     {
+        public Money? RequiredAmount { get; set; }
+        public Money? AvailableAmount { get; set; }
         public InsufficientFundsException(string message) : base(message) { }
         public InsufficientFundsException(string message, Exception innerException) : base(message, innerException) { }
+
+        public InsufficientFundsException(Money requiredAmount, Money availableAmount) : base($"Insufficient funds. Required: {requiredAmount}, Available: {availableAmount}")
+        {
+            RequiredAmount = requiredAmount;
+            AvailableAmount = availableAmount;
+        }
     }
 
     public class InvalidRefundException : PaymentException
