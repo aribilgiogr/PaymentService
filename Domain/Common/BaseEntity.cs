@@ -6,16 +6,32 @@
         public Guid Id { get; protected set; }
         public DateTime CreatedAt { get; protected set; }
         public DateTime? UpdatedAt { get; protected set; }
+        public Dictionary<string, string> Metadata { get; protected set; } // Ek bilgi için esnek bir alan
+
 
         protected BaseEntity()
         {
             Id = Guid.NewGuid(); // Yeni bir GUID oluşturur ve varsayılan olarak atar. Veri tabanının otomatik olarak atamasını istersek sıralı olma ihtimali var, bu yüzden burada atıyoruz.
             CreatedAt = DateTime.UtcNow; // Oluşturulma tarihini UTC olarak ayarlar. UTC kullanımı zaman dilimi sorunlarını önler.
+            Metadata = [];
         }
 
         protected void MarkAsUpdated()
         {
             UpdatedAt = DateTime.UtcNow; // Güncellenme tarihini UTC olarak ayarlar.
+        }
+
+        protected void AddMetadata(string key, string value) => Metadata[key] = value;
+
+        protected void AddMetadata(Dictionary<string, string>? metadata)
+        {
+            if (metadata != null)
+            {
+                foreach (var item in metadata)
+                {
+                    Metadata[item.Key] = item.Value;
+                }
+            }
         }
 
         // Equals override edilere '==' operatörünün doğru çalışması sağlanır.

@@ -71,9 +71,9 @@ namespace Domain.Events
     {
         public Guid PaymentId { get; init; }
         public string OrderId { get; init; }
-        public string CancellationReason { get; init; }
+        public string? CancellationReason { get; init; }
 
-        public PaymentCancelledEvent(Guid paymentId, string orderId, string cancellationReason)
+        public PaymentCancelledEvent(Guid paymentId, string orderId, string? cancellationReason = null)
         {
             PaymentId = paymentId;
             OrderId = orderId;
