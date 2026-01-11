@@ -18,6 +18,7 @@ namespace Domain.Services
         Money CalculateFee(Money amount, PaymentProvider provider);
         bool IsAmountValid(Money amount);
         bool IsPaymentExpired(Payment payment, TimeSpan timeout);
+        bool IsPaymentMethodValid(PaymentMethod method);
     }
 
     public class PaymentDomainService : IPaymentDomainService
@@ -82,7 +83,62 @@ namespace Domain.Services
             return elapsed > timeout;
         }
 
+        public bool IsPaymentMethodValid(PaymentMethod method)
+        {
+            if (method == null) return false;
+
+            return method.Type switch
+            {
+                PaymentMethodType.CreditCard => ValidateCreditCard(method),
+                PaymentMethodType.DebitCard => ValidateDebitCard(method),
+                PaymentMethodType.BankTransfer => ValidateBankTransfer(method),
+                PaymentMethodType.DigitalWallet => ValidateDigitalWallet(method),
+                PaymentMethodType.Cash => true,
+                _ => false,
+            };
+        }
+
         #region Private Helper Methods
+
+        private bool ValidateCreditCard(PaymentMethod method)
+        {
+            if (string.IsNullOrWhiteSpace(method.CardNumber)) return false;
+
+            if (string.IsNullOrWhiteSpace(method.CardHolderName)) return false;
+
+            if (string.IsNullOrWhiteSpace(method.CardExprity)) return false;
+
+            if (!IsCardExprityValid(method.CardExprity)) return false;
+
+            return true;
+        }
+
+        private bool ValidateDebitCard(PaymentMethod method)
+        {
+            return ValidateCreditCard(method);
+        }
+
+        private bool IsCardExprityValid(string expirty)
+        {
+            if (string.IsNullOrWhiteSpace(expirty)) return false;
+
+            var parts = expirty.Split('/');
+
+            if (parts.Length != 2) return false;
+
+            if (!int.TryParse(parts[0], out var month) || month < 1 || month > 12) return false;
+            if (!int.TryParse(parts[1], out var year)) return false;
+
+            var fullYear = year < 100 ? 2000 + year : year;
+
+            var expiryDate = new DateTime(fullYear, month, DateTime.DaysInMonth(fullYear, month));
+
+            return expiryDate >= DateTime.UtcNow;
+        }
+
+        private bool ValidateDigitalWallet(PaymentMethod method) => method.AdditionalData.ContainsKey("Provider");
+
+        private bool ValidateBankTransfer(PaymentMethod method) => !string.IsNullOrWhiteSpace(method.IbanLastFour);
 
         private decimal GetProviderFeePercentage(PaymentProvider provider) => provider switch
         {

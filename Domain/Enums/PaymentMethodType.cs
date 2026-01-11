@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums
 {
-    public enum PaymentMethod
+    public enum PaymentMethodType
     {
         CreditCard,
         DebitCard,
         BankTransfer,
         DigitalWallet,
-        Cash,
-        Check
+        Cash
     }
 }
